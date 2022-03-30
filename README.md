@@ -1,2 +1,2 @@
 # vim
-my vim settings
+my personal (neo)vim settings. always wip.
