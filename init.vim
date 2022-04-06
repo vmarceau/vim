@@ -1,21 +1,23 @@
-" Options
 call plug#begin('~/.config/nvim/plugged')
 
 " Appearance
 Plug 'sheerun/vim-polyglot'
-Plug 'vim-airline/vim-airline'
+Plug 'itchyny/lightline.vim'
 Plug 'dracula/vim'
+Plug 'lifepillar/vim-solarized8'
+Plug 'arcticicestudio/nord-vim'
+Plug 'morhetz/gruvbox'
 
 " Utilities
 Plug 'sheerun/vim-polyglot'
 Plug 'jiangmiao/auto-pairs'
-Plug 'preservim/nerdtree'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-fugitive'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'psliwka/vim-smoothie'
+Plug 'preservim/nerdtree'
 
 " JS
 Plug 'pangloss/vim-javascript' 
@@ -29,7 +31,6 @@ set cursorline                              " highlight current line
 set hidden                                  " allow hidden buffers
 set inccommand=split                        " 
 set number                                  " line numbers in gutter
-set relativenumber                          " relative line numbers in gutter
 set splitbelow splitright                   " default split behavior
 set title                                   " 
 set ttimeoutlen=0                           " 
@@ -45,9 +46,17 @@ set expandtab
 set shiftwidth=2
 set tabstop=2
 
-" Airline
-let g:airline_powerline_fonts = 1
-let g:airline#extensions#tabline#enabled = 1
+" Lightline
+let g:lightline = {
+      \ 'colorscheme': 'gruvbox',
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
+      \ },
+      \ 'component_function': {
+      \   'gitbranch': 'FugitiveHead'
+      \ },
+      \ }
 
 " File browser
 let g:netrw_banner=0
@@ -80,9 +89,8 @@ nnoremap <Up>        <C-W>k
 nnoremap <Down>      <C-W>j
 nnoremap <Left>      <C-W>h
 nnoremap <Right>     <C-W>l
-nnoremap <Tab> :NERDTreeToggle<CR>
-nnoremap <S-Tab> :NERDTreeFind<CR>
-nnoremap <F6> :sp<CR>:terminal<CR>
+nnoremap <F5> :NERDTreeToggle<CR>
+nnoremap <F6> :NERDTreeFind<CR>
 nmap <leader>gd <Plug>(coc-definition)
 nmap <leader>gy <Plug>(coc-type-definition)
 nmap <leader>gi <Plug>(coc-implementation)
@@ -90,7 +98,7 @@ nmap <leader>gr <Plug>(coc-references)
 nmap <leader>f  <Plug>(coc-format-selected)
 nmap <leader>rn <Plug>(coc-rename)
 command! -nargs=0 Prettier :CocCommand prettier.forceFormatDocument
-nmap <C-P> :Files<CR>
+nmap <C-P> :GFiles<CR>
 
 " Use `[g` and `]g` to navigate diagnostics
 " Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.
@@ -134,4 +142,5 @@ tnoremap <Esc> <C-\><C-n>
 
 filetype plugin indent on
 syntax on
-colorscheme dracula 
+set background=dark
+colorscheme gruvbox
