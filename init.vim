@@ -95,8 +95,8 @@ let g:lightline = {
       \ }
 
 " FILE BROWSER
-map nt :NERDTreeTabsToggle<CR>
-map nf :NERDTreeTabsFind<CR>
+map <leader>nt :NERDTreeTabsToggle<CR>
+map <leader>nf :NERDTreeTabsFind<CR>
 "Start NERDtree when dir is selected (e.g. "vim .") and start NERDTreeTabs
 let g:nerdtree_tabs_open_on_console_startup=2
 "Automatically find and select currently opened file in NERDTree
@@ -245,6 +245,11 @@ set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 " nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 " " Resume latest coc list.
 " nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
+ 
+" Disable autocomplete for some file types
+autocmd FileType markdown let b:coc_suggest_disable = 1
+autocmd FileType test let b:coc_suggest_disable = 1
+autocmd FileType vim let b:coc_suggest_disable = 1
 
 " MAPPINGS
 
@@ -256,6 +261,8 @@ nnoremap <Up>        <C-W>k
 nnoremap <Down>      <C-W>j
 nnoremap <Left>      <C-W>h
 nnoremap <Right>     <C-W>l
+nnoremap n nzz
+nnoremap N Nzz
 command! -nargs=0 Prettier :CocCommand prettier.forceFormatDocument
 nmap <C-P> :Files<CR>
 
@@ -264,7 +271,6 @@ vnoremap < <gv
 vnoremap > >gv
 
 " INSERT MODE REMAPS
-inoremap <S-Tab> <C-d>
 
 " TERMINAL MODE REMAPS
 tnoremap <Esc> <C-\><C-n>
