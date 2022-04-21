@@ -17,9 +17,11 @@ Plug 'psliwka/vim-smoothie'
 Plug 'morhetz/gruvbox'
 
 " Utilities
+Plug 'tpope/vim-surround'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-telescope/telescope.nvim'
 
 " File tree
 Plug 'preservim/nerdtree'
@@ -48,8 +50,8 @@ set inccommand=split                        " interactive substitute feedback in
 set number                                  " line numbers in gutter
 set splitbelow splitright                   " default split behavior
 set title                                   " set terminal title to current file
-set wildmenu                                " command line completetion 
-set nobackup                                " some language servers have issues with backup 
+" set wildmenu                                " command line completetion 
+" set nobackup                                " some language servers have issues with backup 
 set nowritebackup                           " some language servers have issues with backup 
 set cmdheight=2                             " command window height 
 set updatetime=300                          " better ux with coc
@@ -104,6 +106,14 @@ let g:nerdtree_tabs_autofind=1
 highlight! link NERDTreeFlags NERDTreeDir
 "Show hidden files
 let NERDTreeShowHidden=1
+
+" TELESCOPE
+" nnoremap <C-P> :Files<CR>
+nnoremap <C-P> <cmd>Telescope find_files<cr>
+nnoremap <leader>tf <cmd>Telescope find_files<cr>
+nnoremap <leader>tg <cmd>Telescope live_grep<cr>
+nnoremap <leader>tb <cmd>Telescope buffers<cr>
+nnoremap <leader>th <cmd>Telescope help_tags<cr>
 
 " COC
 
@@ -211,8 +221,8 @@ endif
 
 " Use CTRL-S for selections ranges.
 " Requires 'textDocument/selectionRange' support of language server.
-nmap <silent> <C-s> <Plug>(coc-range-select)
-xmap <silent> <C-s> <Plug>(coc-range-select)
+" nmap <silent> <C-s> <Plug>(coc-range-select)
+" xmap <silent> <C-s> <Plug>(coc-range-select)
 
 " Add `:Format` command to format current buffer.
 command! -nargs=0 Format :call CocActionAsync('format')
@@ -257,14 +267,10 @@ autocmd FileType vim let b:coc_suggest_disable = 1
 nnoremap <silent> <C-l> :nohl<CR><C-l>
 nnoremap <C-y> <C-y>k
 nnoremap <C-e> <C-e>j
-nnoremap <Up>        <C-W>k
-nnoremap <Down>      <C-W>j
-nnoremap <Left>      <C-W>h
-nnoremap <Right>     <C-W>l
+nnoremap <C-s> :w<CR>
 nnoremap n nzz
 nnoremap N Nzz
 command! -nargs=0 Prettier :CocCommand prettier.forceFormatDocument
-nmap <C-P> :Files<CR>
 
 " Visual mode remappings
 vnoremap < <gv
