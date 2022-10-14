@@ -15,6 +15,7 @@ Plug 'psliwka/vim-smoothie'
 " Plug 'lifepillar/vim-solarized8'
 " Plug 'arcticicestudio/nord-vim'
 Plug 'morhetz/gruvbox'
+" Plug 'Yggdroot/indentLine'
 
 " Utilities
 Plug 'tpope/vim-surround'
@@ -33,7 +34,10 @@ Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-fugitive'
 
 " JS
-Plug 'pangloss/vim-javascript' 
+Plug 'pangloss/vim-javascript'
+
+" Go
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 " Initialize plugin system
 call plug#end()
@@ -43,22 +47,22 @@ autocmd! bufwritepost init.vim source %
 
 " General settings
 set clipboard=unnamedplus                   " access to system clipboard
-set completeopt=noinsert,menuone,noselect   " autocomplete settings 
+set completeopt=noinsert,menuone,noselect   " autocomplete settings
 set cursorline                              " highlight current line
 set hidden                                  " allow hidden buffers
-set inccommand=split                        " interactive substitute feedback in split 
+set inccommand=split                        " interactive substitute feedback in split
 set number                                  " line numbers in gutter
 set splitbelow splitright                   " default split behavior
 set title                                   " set terminal title to current file
-" set wildmenu                                " command line completetion 
-" set nobackup                                " some language servers have issues with backup 
-set nowritebackup                           " some language servers have issues with backup 
-set cmdheight=2                             " command window height 
+" set wildmenu                                " command line completetion
+" set nobackup                                " some language servers have issues with backup
+set nowritebackup                           " some language servers have issues with backup
+set cmdheight=2                             " command window height
 set updatetime=300                          " better ux with coc
 set ttimeoutlen=0                           " timeout
 set shortmess+=c                            " Don't pass messages to |ins-completion-menu|
 set expandtab                               " expand tabs to spaces
-set shiftwidth=2                            " tab width 
+set shiftwidth=2                            " tab width
 set tabstop=2                               " tab width
 
 " Always show the signcolumn, otherwise it would shift the text each time
@@ -112,21 +116,44 @@ let NERDTreeShowHidden=1
 nnoremap <C-P> <cmd>Telescope find_files<cr>
 nnoremap <leader>tf <cmd>Telescope find_files<cr>
 nnoremap <leader>tg <cmd>Telescope live_grep<cr>
+nnoremap <leader>ts <cmd>Telescope grep_string<cr>
 nnoremap <leader>tb <cmd>Telescope buffers<cr>
 nnoremap <leader>th <cmd>Telescope help_tags<cr>
 
+" GO
+let g:go_fmt_command='gopls'
+let g:go_def_mode='gopls'
+let g:go_info_mode='gopls'
+
 " COC
+
+" Some servers have issues with backup files, see #649.
+set nobackup
+set nowritebackup
+
+" Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
+" delays and poor user experience.
+set updatetime=300
+
+" Always show the signcolumn, otherwise it would shift the text each time
+" diagnostics appear/become resolved.
+set signcolumn=yes
 
 " Use tab for trigger completion with characters ahead and navigate.
 " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
 " other plugin before putting this into your config.
 inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#pum#visible() ? coc#pum#next(1):
+      \ CheckBackspace() ? "\<Tab>" :
       \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
 
-function! s:check_back_space() abort
+" Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice.
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! CheckBackspace() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
@@ -137,11 +164,6 @@ if has('nvim')
 else
   inoremap <silent><expr> <c-@> coc#refresh()
 endif
-
-" Make <CR> auto-select the first completion item and notify coc.nvim to
-" format on enter, <cr> could be remapped by other vim plugin
-inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
-                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
 " Use `[g` and `]g` to navigate diagnostics
 " Use `:CocDiagnostics` to get all diagnostics of current buffer in location list.
@@ -155,15 +177,13 @@ nmap <leader>gi <Plug>(coc-implementation)
 nmap <leader>gr <Plug>(coc-references)
 
 " Use K to show documentation in preview window.
-nnoremap <silent> K :call <SID>show_documentation()<CR>
+nnoremap <silent> K :call ShowDocumentation()<CR>
 
-function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  elseif (coc#rpc#ready())
+function! ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
     call CocActionAsync('doHover')
   else
-    execute '!' . &keywordprg . " " . expand('<cword>')
+    call feedkeys('K', 'in')
   endif
 endfunction
 
@@ -221,8 +241,8 @@ endif
 
 " Use CTRL-S for selections ranges.
 " Requires 'textDocument/selectionRange' support of language server.
-" nmap <silent> <C-s> <Plug>(coc-range-select)
-" xmap <silent> <C-s> <Plug>(coc-range-select)
+nmap <silent> <C-s> <Plug>(coc-range-select)
+xmap <silent> <C-s> <Plug>(coc-range-select)
 
 " Add `:Format` command to format current buffer.
 command! -nargs=0 Format :call CocActionAsync('format')
@@ -238,27 +258,27 @@ command! -nargs=0 OR   :call     CocActionAsync('runCommand', 'editor.action.org
 " provide custom statusline: lightline.vim, vim-airline.
 set statusline^=%{coc#status()}%{get(b:,'coc_current_function','')}
 
-" " Mappings for CoCList
-" " Show all diagnostics.
-" nnoremap <silent><nowait> <space>a  :<C-u>CocList diagnostics<cr>
-" " Manage extensions.
-" nnoremap <silent><nowait> <space>e  :<C-u>CocList extensions<cr>
-" " Show commands.
-" nnoremap <silent><nowait> <space>c  :<C-u>CocList commands<cr>
-" " Find symbol of current document.
-" nnoremap <silent><nowait> <space>o  :<C-u>CocList outline<cr>
-" " Search workspace symbols.
-" nnoremap <silent><nowait> <space>s  :<C-u>CocList -I symbols<cr>
-" " Do default action for next item.
-" nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
-" " Do default action for previous item.
-" nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
-" " Resume latest coc list.
-" nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
- 
+" Mappings for CoCList
+" Show all diagnostics.
+nnoremap <silent><nowait> <space>a  :<C-u>CocList diagnostics<cr>
+" Manage extensions.
+nnoremap <silent><nowait> <space>e  :<C-u>CocList extensions<cr>
+" Show commands.
+nnoremap <silent><nowait> <space>c  :<C-u>CocList commands<cr>
+" Find symbol of current document.
+nnoremap <silent><nowait> <space>o  :<C-u>CocList outline<cr>
+" Search workspace symbols.
+nnoremap <silent><nowait> <space>s  :<C-u>CocList -I symbols<cr>
+" Do default action for next item.
+nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
+" Do default action for previous item.
+nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
+" Resume latest coc list.
+nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
+
 " Disable autocomplete for some file types
 autocmd FileType markdown let b:coc_suggest_disable = 1
-autocmd FileType test let b:coc_suggest_disable = 1
+autocmd FileType text let b:coc_suggest_disable = 1
 autocmd FileType vim let b:coc_suggest_disable = 1
 
 " MAPPINGS
@@ -270,7 +290,19 @@ nnoremap <C-e> <C-e>j
 nnoremap <C-s> :w<CR>
 nnoremap n nzz
 nnoremap N Nzz
+nnoremap <leader>cp :let @*=expand("%")<CR>
 command! -nargs=0 Prettier :CocCommand prettier.forceFormatDocument
+
+" Trim whitespaces
+" https://vi.stackexchange.com/questions/454/whats-the-simplest-way-to-strip-trailing-whitespace-from-all-lines-in-a-file
+fun! TrimWhitespace()
+    let l:save = winsaveview()
+    keeppatterns %s/\s\+$//e
+    call winrestview(l:save)
+endfun
+
+noremap <Leader>w :call TrimWhitespace()<CR>
+
 
 " Visual mode remappings
 vnoremap < <gv
@@ -281,6 +313,7 @@ vnoremap > >gv
 " TERMINAL MODE REMAPS
 tnoremap <Esc> <C-\><C-n>
 
+" SYNTAX AND THEME
 filetype plugin indent on
 syntax on
 set background=dark
